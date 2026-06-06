@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react' // 1. Imported Suspense
 import { useRouter, useSearchParams } from 'next/navigation'
 import { mockSalaries } from '@/lib/mock-data'
 import { LevelBadge } from '@/components/ui/Badge'
@@ -34,7 +34,8 @@ function DeltaCell({ delta, field }: { delta: number; field: string }) {
   )
 }
 
-export default function ComparePage() {
+// 2. Created an internal component that safely manages hooks and UI layout
+function CompareComponent() {
   const router      = useRouter()
   const params      = useSearchParams()
   const [s1, setS1] = useState(params.get('s1') ?? '')
@@ -71,14 +72,7 @@ export default function ComparePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-1" style={{ color: '#222222' }}>Compare Offers</h1>
-        <p className="text-sm" style={{ color: '#717171' }}>
-          Select two salary records to compare them side-by-side
-        </p>
-      </div>
-
+    <>
       {/* Selectors */}
       <div className="grid grid-cols-2 gap-4">
         {([
@@ -168,6 +162,28 @@ export default function ComparePage() {
           </div>
         </div>
       )}
+    </>
+  )
+}
+
+// 3. Keep the default export clean, wrapping everything in a Suspense block
+export default function ComparePage() {
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold mb-1" style={{ color: '#222222' }}>Compare Offers</h1>
+        <p className="text-sm" style={{ color: '#717171' }}>
+          Select two salary records to compare them side-by-side
+        </p>
+      </div>
+
+      <Suspense fallback={
+        <div className="text-center py-20 text-sm text-[#717171]">
+          Loading comparison panel...
+        </div>
+      }>
+        <CompareComponent />
+      </Suspense>
     </div>
   )
 }
