@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export async function GET(_: NextRequest, { params }: { params: { slug: string } }) {
+// 1. Updated params type to Promise<{ slug: string }>
+export async function GET(_: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  
+  // 2. Await the params before using the properties
+  const { slug } = await params;
+
   const company = await prisma.company.findUnique({
-    where: { slug: params.slug },
+    where: { slug: slug }, // Used the awaited slug here
     include: { salaries: { orderBy: { total_compensation: 'desc' } } },
   })
 
