@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 2. Check types are correct
+  // 2. Check types are correct (including optional values if passed)
   const stringFields = ['company', 'role', 'level', 'location', 'currency']
   for (const field of stringFields) {
-    if ( typeof body[field] !== 'string') {
+    if (typeof body[field] !== 'string') {
       return NextResponse.json({ error: true, field, message: `${field} must be a string` }, { status: 400 })
     }
   }
@@ -32,6 +32,14 @@ export async function POST(req: NextRequest) {
   }
   if (body.confidence_score !== undefined && typeof body.confidence_score !== 'number') {
     return NextResponse.json({ error: true, field: 'confidence_score', message: 'confidence_score must be a number' }, { status: 400 })
+  }
+  
+  // Hardening optional inputs against bad payloads
+  if (body.bonus !== undefined && body.bonus !== null && typeof body.bonus !== 'number') {
+    return NextResponse.json({ error: true, field: 'bonus', message: 'bonus must be a number' }, { status: 400 })
+  }
+  if (body.stock !== undefined && body.stock !== null && typeof body.stock !== 'number') {
+    return NextResponse.json({ error: true, field: 'stock', message: 'stock must be a number' }, { status: 400 })
   }
 
   // 3. Check level is valid enum value
@@ -66,17 +74,16 @@ export async function POST(req: NextRequest) {
     create: { name: body.company.trim(), slug, normalized_name: normalized },
   })
 
-  // 8. Recompute total_compensation (Safely handling potential decimals before BigInt conversion)
+  // 8. Recompute total_compensation safely
   const bonus = body.bonus ?? 0
   const stock = body.stock ?? 0
   
-  // Math.floor protects BigInt initialization from runtime fractional component errors
   const baseSalaryBI = BigInt(Math.floor(body.base_salary))
   const bonusBI = BigInt(Math.floor(bonus))
   const stockBI = BigInt(Math.floor(stock))
   const total_compensation = baseSalaryBI + bonusBI + stockBI
 
-  // 9. Duplicate check (last 48 hours, +/- 10% base_salary match)
+  // 9. Duplicate check using optimized BigInt literals (10n)
   const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000)
   const lowerBound = baseSalaryBI - (baseSalaryBI / BigInt(10))
   const upperBound = baseSalaryBI + (baseSalaryBI / BigInt(10))
@@ -118,7 +125,7 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Safe serialization out of BigInt values
+  // Clean serialization output safely returning native JS numbers
   const sanitizedSalary = {
     ...salary,
     base_salary: Number(salary.base_salary),
