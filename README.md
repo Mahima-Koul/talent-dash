@@ -1,91 +1,53 @@
-# TalentDash 
+# TalentDash
 
-**A normalized salary analytics platform built with Next.js 15, Prisma, and PostgreSQL.**
+Salary intelligence platform for software engineers. Structured compensation data with company normalization, duplicate detection, and median-based salary analytics built on Next.js 15, Prisma, and PostgreSQL.
 
-TalentDash collects, cleans, and aggregates compensation data into a structured dataset for accurate salary insights. The platform includes a server-side normalization pipeline, duplicate submission protection, and statistical compensation analysis across companies, locations, and experience levels.
+## Live URL
 
----
-
-## ✨ Features
-
-### Salary Ingestion Engine
-
-* Automatic company name normalization
-* Server-side compensation validation
-* Total Compensation (TC) calculation
-* 48-hour duplicate submission detection
-* Case-insensitive data standardization
-
-### Analytics & Insights
-
-* Median compensation calculations
-* Company-level salary breakdowns
-* Level and experience distribution analysis
-* Compensation comparison tools
-* Paginated salary exploration
-
-### Performance & Reliability
-
-* PostgreSQL-backed persistence
-* Prisma ORM type safety
-* Optimized API queries
-* BigInt support for compensation fields
-* Server-side validation and error handling
+https://talent-dash-mu.vercel.app/
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
-| Layer            | Technology      |
-| ---------------- | --------------- |
-| Frontend         | Next.js 15      |
-| Language         | TypeScript      |
-| Database         | PostgreSQL      |
-| ORM              | Prisma          |
-| Hosting          | Vercel          |
-| Database Hosting | Neon PostgreSQL |
+**Framework:** Next.js 15 (App Router)
+**Language:** TypeScript
+**Styling:** Tailwind CSS
+**Database:** PostgreSQL
+**ORM:** Prisma 7
+**Deploy:** Vercel
 
 ---
 
-## 🚀 Quick Start
+## Run Locally (Under 5 Minutes)
 
-### 1. Clone the Repository
+### 1. Clone and install
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/talent-dash.git
-cd talent-dash
+git clone https://github.com/YOUR_USERNAME/talentdash.git
+cd talentdash
+
+npm install
 ```
 
-### 2. Install Dependencies
+### 2. Set up environment variables
 
-```bash
-npm install --legacy-peer-deps
-```
-
-### 3. Configure Environment Variables
-
-Create a `.env` file in the project root:
+Create a `.env` file:
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require"
 
-NODE_ENV="development"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-### 4. Run Database Migrations
+### 3. Set up database
 
 ```bash
+npx prisma generate
 npx prisma migrate dev --name init
-```
-
-### 5. Seed Sample Data
-
-```bash
 npx prisma db seed
 ```
 
-### 6. Start Development Server
+### 4. Start development server
 
 ```bash
 npm run dev
@@ -99,140 +61,97 @@ http://localhost:3000
 
 ---
 
-## 🗄️ Database Design
+## Environment Variables
 
-Compensation data is stored using PostgreSQL and Prisma.
+| Variable            | Description                  |
+| ------------------- | ---------------------------- |
+| DATABASE_URL        | PostgreSQL connection string |
 
-Financial values are maintained using **BigInt** to ensure precision and avoid overflow issues when handling large compensation packages.
+---
 
-The schema includes:
+## API Endpoints
+
+| Method | Route                   | Description                                       |
+| ------ | ----------------------- | ------------------------------------------------- |
+| GET    | `/api/salaries`         | List salary records with filtering and pagination |
+| POST   | `/api/ingest-salary`    | Submit a new salary record                        |
+| GET    | `/api/companies/[slug]` | Company details and compensation analytics        |
+| GET    | `/api/compare?s1=&s2=`  | Compare two salary records                        |
+
+---
+
+## Architecture Decisions
+
+### Server-side normalization
+
+Salary submissions often contain inconsistent company names such as:
+
+* Google
+* GOOGLE
+* Google India
+
+The ingestion pipeline normalizes these variations into a single canonical company record before storage.
+
+### Median over average
+
+Compensation distributions are frequently skewed by extreme values. Company analytics therefore use median total compensation rather than arithmetic averages to better represent typical salaries.
+
+### Duplicate submission protection
+
+New submissions are checked against existing records within a 48-hour window. Records with matching company, role, level, and compensation values within a 10% salary range are rejected to reduce duplicate data.
+
+### Offset pagination
+
+The salary explorer uses page-based pagination because URLs such as:
+
+```text
+/salaries?page=3
+```
+
+are shareable, bookmarkable, and easier to index than cursor-based alternatives.
+
+---
+
+## Seed Data
+
+Includes sample compensation records across major technology companies, covering multiple:
 
 * Companies
-* Salaries
-* Compensation components
-* Experience levels
+* Levels
 * Locations
+* Experience bands
+
+Used for local testing and analytics verification.
 
 ---
 
-## 🌱 Seeding & Data Normalization
-
-The seed script populates the database with realistic salary data and demonstrates TalentDash's normalization pipeline.
-
-Examples:
-
-| Input        | Normalized Output |
-| ------------ | ----------------- |
-| GOOGLE       | google            |
-| Google India | google            |
-| google       | google            |
-
-This ensures that salary data from different submissions maps consistently to a single company entity.
-
----
-
-## 📡 API Endpoints
-
-### POST `/api/ingest-salary`
-
-Creates a salary submission.
-
-Features:
-
-* Input normalization
-* Total Compensation calculation
-* Duplicate detection
-* Validation checks
-
-Returns:
-
-* `201 Created`
-* `409 Conflict` for duplicate submissions
-
----
-
-### GET `/api/salaries`
-
-Retrieve salary records with:
-
-* Pagination
-* Search filters
-* Case-insensitive matching
-
----
-
-### GET `/api/companies/[slug]`
-
-Returns:
-
-* Company information
-* Median compensation
-* Salary distribution
-* Level breakdowns
-
----
-
-### GET `/api/compare?s1=id1&s2=id2`
-
-Compare two salary submissions across:
-
-* Base Salary
-* Bonus
-* Stock Compensation
-* Experience
-* Level
-
----
-
-## 🧪 Development Commands
-
-### Run Linter
+## Development Commands
 
 ```bash
 npm run lint
 ```
 
-### Generate Production Build
+Run lint checks.
 
 ```bash
 npm run build
 ```
 
-### Start Production Server
+Create a production build.
 
 ```bash
 npm run start
 ```
 
----
-
-## 🌐 Deployment
-
-**Live Application**
-
-```text
-https://talent-dash-yourlink.vercel.app
-```
-
-**Infrastructure**
-
-* Vercel Hosting
-* Neon Serverless PostgreSQL
-* Prisma ORM
+Run the production server locally.
 
 ---
 
-## 📈 Future Improvements
+## Future Improvements
 
-* Salary trend visualization
-* Advanced filtering
-* Authentication & user accounts
-* CSV import/export
-* Regional compensation insights
-* Interactive analytics dashboards
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
+* Salary trend tracking
+* Authentication and user accounts
+* Compensation visualizations
+* Regional salary insights
+* Advanced filtering and search
+* Submission moderation workflow
