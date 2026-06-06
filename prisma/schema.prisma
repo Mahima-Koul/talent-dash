@@ -4,18 +4,34 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Level {
-  L3 L4 L5 L6
-  SDE_I SDE_II SDE_III
-  STAFF PRINCIPAL IC4 IC5
+  L3
+  L4
+  L5
+  L6
+  SDE_I
+  SDE_II
+  SDE_III
+  STAFF
+  PRINCIPAL
+  IC4
+  IC5
 }
 
-enum Currency { INR USD GBP EUR }
+enum Currency {
+  INR
+  USD
+  GBP
+  EUR
+}
 
-enum Source { CONTRIBUTOR SCRAPED AI_INFERRED }
+enum Source {
+  CONTRIBUTOR
+  SCRAPED
+  AI_INFERRED
+}
 
 model Company {
   id              String   @id @default(uuid())
