@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -44,8 +44,9 @@ export async function POST(req: NextRequest) {
 
   // 7. Duplicate check — same company+role+level+location, base within 10%, last 48h
   const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000)
-  const lower = body.base_salary * 0.9
-  const upper = body.base_salary * 1.1
+  const baseSalary = BigInt(body.base_salary)
+  const lower = baseSalary - baseSalary / BigInt(10)
+  const upper = baseSalary + baseSalary / BigInt(10)
   const duplicate = await prisma.salary.findFirst({
     where: {
       company_id: company.id,
@@ -79,5 +80,14 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  return NextResponse.json(salary, { status: 201 })
+  const sanitizedSalary = {
+    ...salary,
+    base_salary: Number(salary.base_salary),
+    bonus: Number(salary.bonus),
+    stock: Number(salary.stock),
+    total_compensation: Number(salary.total_compensation),
+  }
+
+  console.log("CREATED:", sanitizedSalary)
+  return NextResponse.json(sanitizedSalary, { status: 201 })
 }

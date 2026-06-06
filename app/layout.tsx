@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
               ))}
               <Link
-                href="/salaries"
+                href="/salaries/add"
                 className="text-sm font-medium px-4 py-2 rounded-lg text-white transition-opacity hover:opacity-90"
                 style={{ background: '#FF5A5F' }}
               >

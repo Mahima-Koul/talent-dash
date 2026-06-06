@@ -4,6 +4,7 @@ import { SalaryTable } from '@/components/features/SalaryTable'
 import { FilterBar } from '@/components/features/FilterBar'
 import { Pagination } from '@/components/ui/Pagination'
 import type { Level, SalaryRecord } from '@/types/salary'
+import { SortSelect } from '@/components/features/SortSelect'
 
 export const revalidate = 3600
 
@@ -98,9 +99,7 @@ export default async function SalariesPage({ searchParams }: Props) {
               </p>
               <div className="flex items-center gap-2">
                 <label className="text-xs" style={{ color: '#717171' }}>Sort:</label>
-                  <option value="total_comp_desc">Total Comp ↓</option>
-                  <option value="total_comp_asc">Total Comp ↑</option>
-                  <option value="date_desc">Most Recent</option>
+                <SortSelect current={sort} />
               </div>
             </div>
 
@@ -112,7 +111,6 @@ export default async function SalariesPage({ searchParams }: Props) {
                 totalPages={totalPages}
                 total={total}
                 limit={PAGE_SIZE}
-                onPage={() => {}}
               />
             )}
           </div>
